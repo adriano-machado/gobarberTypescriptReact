@@ -10,6 +10,7 @@ import Input from '../../components/Input';
 import Button from '../../components/Button';
 
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContainer';
 
 interface SignInFormData {
   email: string;
@@ -18,6 +19,7 @@ interface SignInFormData {
 const SignIn: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
   const { signIn, user } = useAuth();
+  const { addToast, removeToast } = useToast();
   console.log(user);
   const handleSubmit = useCallback(
     async (data: SignInFormData) => {
@@ -35,15 +37,21 @@ const SignIn: React.FC = () => {
           abortEarly: false,
         });
 
-        signIn({ email: data.email, password: data.password });
+        await signIn({ email: data.email, password: data.password });
       } catch (err) {
-        const errors = getValidationError(err);
-        formRef.current?.setErrors(errors);
-
+        if (err instanceof Yup.ValidationError) {
+          const errors = getValidationError(err);
+          formRef.current?.setErrors(errors);
+        }
+        addToast({
+          type: 'error',
+          title: 'Error to authenticate',
+          description: 'An error has ocurred, check credentials',
+        });
         console.log(err);
       }
     },
-    [signIn],
+    [signIn, addToast],
   );
   return (
     <Container>
