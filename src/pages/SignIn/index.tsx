@@ -20,9 +20,8 @@ interface SignInFormData {
 }
 const SignIn: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
-  const { signIn, user } = useAuth();
+  const { signIn } = useAuth();
   const { addToast } = useToast();
-  console.log(user);
   const handleSubmit = useCallback(
     async (data: SignInFormData) => {
       try {
@@ -44,7 +43,6 @@ const SignIn: React.FC = () => {
         if (err instanceof Yup.ValidationError) {
           const errors = getValidationError(err);
           formRef.current?.setErrors(errors);
-          return;
         }
         addToast({
           type: 'error',
