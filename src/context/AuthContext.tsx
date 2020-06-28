@@ -28,16 +28,11 @@ export const AuthProvider: React.FC = ({ children }) => {
   });
 
   const signIn = useCallback(async ({ email, password }) => {
-    try {
-      const response = await api.post('sessions', { email, password });
-      console.log(response.data);
-      const { token, user } = response.data;
-      setData({ token, user });
-      localStorage.setItem('@Gobarber:token', token);
-      localStorage.setItem('@Gobarber:user', JSON.stringify(user));
-    } catch (err) {
-      console.log(err);
-    }
+    const response = await api.post('sessions', { email, password });
+    const { token, user } = response.data;
+    setData({ token, user });
+    localStorage.setItem('@Gobarber:token', token);
+    localStorage.setItem('@Gobarber:user', JSON.stringify(user));
   }, []);
 
   const signOut = useCallback(() => {
