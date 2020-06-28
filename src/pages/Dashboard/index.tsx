@@ -1,5 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FiPower, FiClock } from 'react-icons/fi';
+import DayPicker from 'react-day-picker';
+import logoImg from '../../assets/logo.svg';
+import { useAuth } from '../../context/AuthContext';
+
 import {
   Container,
   Header,
@@ -9,11 +13,12 @@ import {
   Schedule,
   Calendar,
   NextAppointment,
+  Section,
+  Appointment,
 } from './styles';
-import logoImg from '../../assets/logo.svg';
-import { useAuth } from '../../context/AuthContext';
 
 const Dashboard: React.FC = () => {
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const { signOut, user } = useAuth();
   return (
     <Container>
@@ -62,6 +67,53 @@ const Dashboard: React.FC = () => {
               </span>
             </div>
           </NextAppointment>
+
+          <Section>
+            <strong>Morning</strong>
+            <Appointment>
+              <span>
+                <FiClock />
+                08:00
+              </span>
+              <div>
+                <img
+                  src="https://api.adorable.io/avatars/285/abott@adorable.png"
+                  alt="teste"
+                />
+                <strong>Adriano Machado</strong>
+              </div>
+            </Appointment>
+            <Appointment>
+              <span>
+                <FiClock />
+                08:00
+              </span>
+              <div>
+                <img
+                  src="https://api.adorable.io/avatars/285/abott@adorable.png"
+                  alt="teste"
+                />
+                <strong>Adriano Machado</strong>
+              </div>
+            </Appointment>
+          </Section>
+          <Section>
+            <strong>Afternoon</strong>
+
+            <Appointment>
+              <span>
+                <FiClock />
+                08:00
+              </span>
+              <div>
+                <img
+                  src="https://api.adorable.io/avatars/285/abott@adorable.png"
+                  alt="teste"
+                />
+                <strong>Adriano Machado</strong>
+              </div>
+            </Appointment>
+          </Section>
         </Schedule>
         <Calendar />
       </Content>
