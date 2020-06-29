@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { isToday, format, parseISO } from 'date-fns';
+import { isToday, format, parseISO, isAfter } from 'date-fns';
 // import ptBR from 'date-fns/locale/pt-BR';
 import { FiPower, FiClock } from 'react-icons/fi';
 import DayPicker, { DayModifiers } from 'react-day-picker';
@@ -46,7 +46,7 @@ const Dashboard: React.FC = () => {
   const { signOut, user } = useAuth();
 
   const handleDateChange = useCallback((day: Date, modifiers: DayModifiers) => {
-    if (modifiers.available) {
+    if (modifiers.available && !modifiers.disabled) {
       setSelectedDate(day);
     }
   }, []);
@@ -98,7 +98,7 @@ const Dashboard: React.FC = () => {
       }
     }
     getAppointments();
-  }, [selectedDate, user]);
+  }, [selectedDate, user, currentMonth]);
 
   const disabledDays = useMemo(() => {
     const dates = monthAvailability
@@ -127,6 +127,11 @@ const Dashboard: React.FC = () => {
   const afternoonAppointments = useMemo(() => {
     return appointments.filter(
       appointment => parseISO(appointment.date).getHours() >= 12,
+    );
+  }, [appointments]);
+  const nextAppointment = useMemo(() => {
+    return appointments.find(appointment =>
+      isAfter(parseISO(appointment.date), new Date()),
     );
   }, [appointments]);
   return (
@@ -162,24 +167,31 @@ const Dashboard: React.FC = () => {
             <span>{selectedDateAsText}</span>
             <span>{selectedWeekday}</span>
           </p>
-          <NextAppointment>
-            <strong>Next schedule</strong>
-            <div>
-              <img
-                src="https://api.adorable.io/avatars/285/abott@adorable.png"
-                alt="teste"
-              />
-              <strong>Adriano Machado</strong>
-              <span>
-                <FiClock />
-                08:00
-              </span>
-            </div>
-          </NextAppointment>
+          {isToday(selectedDate) && nextAppointment && (
+            <NextAppointment>
+              <strong>Next schedule</strong>
+              <div>
+                <img
+                  src={
+                    nextAppointment?.user.avatar_url ||
+                    'https://api.adorable.io/avatars/285/abott@adorable.png'
+                  }
+                  alt={nextAppointment.user.name}
+                />
+                <strong>{nextAppointment.user.name}</strong>
+                <span>
+                  <FiClock />
+                  {nextAppointment.hourFormatted}
+                </span>
+              </div>
+            </NextAppointment>
+          )}
 
           <Section>
             <strong>Morning</strong>
-
+            {morningAppointments.length === 0 && (
+              <p>No schedules in the morning</p>
+            )}
             {morningAppointments.map(morningAppointment => (
               <Appointment key={morningAppointment.id}>
                 <span>
@@ -202,6 +214,9 @@ const Dashboard: React.FC = () => {
 
           <Section>
             <strong>Afternoon</strong>
+            {afternoonAppointments.length === 0 && (
+              <p>No schedules in the afternoon</p>
+            )}
             {afternoonAppointments.map(afternoonAppointment => (
               <Appointment key={afternoonAppointment.id}>
                 <span>
