@@ -18,6 +18,8 @@ interface ProfileFormData {
   name: string;
   email: string;
   password: string;
+  old_password: string;
+  password_confirmation: string;
 }
 const Profile: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
@@ -35,21 +37,43 @@ const Profile: React.FC = () => {
           email: Yup.string()
             .required('E-mail is mandatory')
             .email('You must enter a valid e-mail'),
-          password: Yup.string().min(6, 'At least 6 digits'),
+          old_password: Yup.string(),
+          password: Yup.string().when('old_password', {
+            is: val => !!val.length,
+            then: Yup.string().required('Mandatory field'),
+            otherwise: Yup.string(),
+          }),
+          password_confirmation: Yup.string()
+            .when('old_password', {
+              is: val => !!val.length,
+              then: Yup.string().required('Mandatory field'),
+              otherwise: Yup.string(),
+            })
+            .oneOf([Yup.ref('password'), null], 'Incorrect confirmation'),
         });
 
         await schema.validate(data, {
           abortEarly: false,
         });
-
-        await api.post('/users', data);
-
+        const formData = {
+          name: data.name,
+          email: data.email,
+          ...(data.old_password
+            ? {
+                old_password: data.old_password,
+                password: data.password,
+                password_confirmation: data.password_confirmation,
+              }
+            : {}),
+        };
+        const response = await api.put('/profile', formData);
+        updateUser(response.data);
         addToast({
           type: 'success',
-          title: 'Sign up success!',
-          description: 'You are ready to login on GoBarber!',
+          title: 'Profile update!',
+          description: 'Your profile was updated!',
         });
-        history.push('/');
+        history.push('/dashboard');
       } catch (err) {
         if (err instanceof Yup.ValidationError) {
           const errors = getValidationError(err);
@@ -57,7 +81,7 @@ const Profile: React.FC = () => {
         }
         addToast({
           type: 'error',
-          title: 'Error on create account',
+          title: 'Error on update profile',
           description: 'An error has ocurred, try again',
         });
       }
